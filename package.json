@@ -1,0 +1,17 @@
+{
+  "name": "fe-flix-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplicativo de vídeos cristãos com conteúdo do YouTube",
+  "scripts": {
+    "build": "echo 'Arquivos web prontos em www/'",
+    "android:sync": "npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}

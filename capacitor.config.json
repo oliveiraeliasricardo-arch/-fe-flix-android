@@ -1,0 +1,6 @@
+{
+  "appId": "com.feflix.app",
+  "appName": "FÉ FLIX",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}

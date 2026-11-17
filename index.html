@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#08090d">
+<title>FÉ FLIX</title>
+<style>
+:root{--bg:#08090d;--panel:#141720;--gold:#e8bd65;--muted:#9ba2b2}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
+button,input{font:inherit}button{cursor:pointer}
+.app{height:100dvh;display:flex;flex-direction:column;background:var(--bg)}
+header{height:58px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 16px;padding-top:env(safe-area-inset-top);background:#090a0f;z-index:5;border-bottom:1px solid #20232c}
+.logo{font-size:22px;font-weight:900;letter-spacing:1.5px}.logo span{color:var(--gold)}.head-actions{display:flex;gap:9px}
+.iconbtn{border:1px solid #292e3a;color:white;background:#171b25;border-radius:50%;width:38px;height:38px;font-size:17px}
+main{flex:1;min-height:0;position:relative}
+#feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain}
+.video-card{height:100%;min-height:100%;position:relative;scroll-snap-align:start;background:#050609;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.video-card iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.video-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,rgba(0,0,0,.88),transparent 42%,rgba(0,0,0,.16))}
+.video-info{position:absolute;left:16px;right:76px;bottom:25px;z-index:2;text-shadow:0 2px 5px #000}
+.channel{font-size:13px;color:#f4d99f;font-weight:700;margin-bottom:7px}.video-title{font-size:17px;line-height:1.3;font-weight:800;margin-bottom:8px}.video-desc{font-size:12px;color:#e0e0e0;line-height:1.4}
+.actions{position:absolute;right:12px;bottom:35px;z-index:3;display:flex;flex-direction:column;gap:19px;align-items:center}
+.action{border:0;background:transparent;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;text-shadow:0 1px 4px #000}.action b{font-size:25px;font-weight:500}.action.active b{color:var(--gold)}
+.empty{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--muted);line-height:1.6}
+.loading{display:flex;flex-direction:column;align-items:center;gap:12px}.spinner{width:35px;height:35px;border:3px solid #333;border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+nav{height:65px;flex:none;display:flex;justify-content:space-around;align-items:center;background:#0c0e14;border-top:1px solid #242833;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+.navbtn{background:none;border:0;color:#9299a8;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;min-width:58px}.navbtn strong{font-size:20px;font-weight:500}.navbtn.active{color:var(--gold)}
+#categorybar{position:absolute;top:10px;left:0;right:0;z-index:4;display:flex;gap:8px;overflow-x:auto;padding:0 12px;scrollbar-width:none;pointer-events:auto}
+.chip{white-space:nowrap;background:rgba(10,12,18,.78);border:1px solid #ffffff30;color:#ddd;border-radius:20px;padding:7px 12px;font-size:11px;backdrop-filter:blur(8px)}
+.chip.active{background:var(--gold);color:#17120a;border-color:var(--gold);font-weight:800}
+.overlay{position:absolute;inset:0;background:#08090df5;z-index:10;display:none;overflow:auto;padding:22px 18px}.overlay.show{display:block}
+.overlay h2{margin:5px 0 8px}.muted{color:var(--muted);font-size:13px;line-height:1.5}
+.field{width:100%;padding:13px;border-radius:11px;border:1px solid #343a48;background:#151923;color:white;margin:8px 0 14px;outline:none}
+.primary{width:100%;border:0;border-radius:12px;background:var(--gold);color:#17120a;font-weight:900;padding:13px;margin:8px 0}
+.secondary{width:100%;border:1px solid #373d4b;border-radius:12px;background:#171b25;color:#fff;padding:12px;margin:5px 0}
+.result-list{display:grid;gap:12px;margin-top:15px}.result{display:flex;gap:10px;text-align:left;background:#151923;border:1px solid #292f3b;border-radius:12px;padding:8px;color:white}.result img{width:112px;aspect-ratio:16/9;object-fit:cover;border-radius:7px}.result span{font-size:12px;line-height:1.4}
+.small{font-size:11px;color:#8991a1}
+#toast{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:#252a35;color:white;padding:10px 15px;border-radius:20px;font-size:12px;z-index:20;display:none;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="logo">FÉ <span>FLIX</span></div><div class="head-actions"><button class="iconbtn" id="searchBtn" aria-label="Buscar">⌕</button><button class="iconbtn" id="settingsBtn" aria-label="Configurações">⚙</button></div></header>
+<main>
+<div id="feed"><div class="empty"><div class="loading"><div class="spinner"></div><b>Preparando seu feed cristão...</b><span class="small">Conteúdos que fortalecem a fé.</span></div></div></div>
+<div id="categorybar"></div>
+<div id="searchPanel" class="overlay"><button class="iconbtn close" style="float:right">✕</button><h2>Buscar vídeos</h2><p class="muted">Encontre mensagens, louvores e estudos no YouTube.</p><input id="searchInput" class="field" placeholder="Ex.: sermão sobre a volta de Jesus"><button id="doSearch" class="primary">Pesquisar no YouTube</button><div id="searchResults" class="result-list"></div></div>
+<div id="settingsPanel" class="overlay"><button class="iconbtn close" style="float:right">✕</button><h2>Configurações</h2><p class="muted">Para pesquisar automaticamente, informe sua chave da YouTube Data API v3. A chave fica armazenada somente neste aparelho.</p><label class="small">Chave da API do YouTube</label><input id="apiKey" class="field" type="password" placeholder="Cole sua chave da API aqui"><button id="saveKey" class="primary">Salvar chave</button><button id="clearKey" class="secondary">Apagar chave</button><p class="muted">Como obter: Google Cloud Console → criar projeto → ativar YouTube Data API v3 → criar credencial de chave de API. Restrinja a chave à API do YouTube e, quando possível, ao seu aplicativo.</p><hr style="border-color:#282e39"><p class="small">FÉ FLIX • Versão inicial</p></div>
+<div id="toast"></div>
+</main>
+<nav>
+<button class="navbtn active" data-tab="inicio"><strong>⌂</strong>Início</button>
+<button class="navbtn" data-tab="louvores"><strong>♫</strong>Louvores</button>
+<button class="navbtn" data-tab="pregacoes"><strong>▤</strong>Pregações</button>
+<button class="navbtn" data-tab="salvos"><strong>♡</strong>Salvos</button>
+</nav>
+</div>
+<script>
+const categories=[
+ {name:"Para você",query:"mensagens cristãs Jesus evangelho"},
+ {name:"Jesus",query:"Jesus Cristo vida ensinamentos mensagem bíblica"},
+ {name:"Pregações",query:"pregação bíblica cristã sermão"},
+ {name:"Louvores",query:"louvor e adoração gospel cristão"},
+ {name:"Estudos bíblicos",query:"estudo bíblico cristão Bíblia"},
+ {name:"Testemunhos",query:"testemunho cristão transformação Jesus"},
+ {name:"Profecias",query:"profecias bíblicas estudo cristão"}
+];
+const $=s=>document.querySelector(s);
+let apiKey=localStorage.getItem("feFlixApiKey")||"", currentCategory=0, videos=[], saved=JSON.parse(localStorage.getItem("feFlixSaved")||"[]"), nextPage="", busy=false, activeTab="inicio";
+const feed=$("#feed"), bar=$("#categorybar");
+function toast(t){const el=$("#toast");el.textContent=t;el.style.display="block";setTimeout(()=>el.style.display="none",2400)}
+function panels(which){$("#searchPanel").classList.toggle("show",which==="search");$("#settingsPanel").classList.toggle("show",which==="settings")}
+function renderCategories(){bar.innerHTML=categories.map((c,i)=>`<button class="chip ${i===currentCategory?"active":""}" data-cat="${i}">${c.name}</button>`).join("");bar.querySelectorAll("button").forEach(b=>b.onclick=()=>{currentCategory=+b.dataset.cat;activeTab="inicio";loadFeed(true)})}
+function showLoading(msg="Buscando vídeos cristãos..."){feed.innerHTML=`<div class="empty"><div class="loading"><div class="spinner"></div><b>${msg}</b></div></div>`}
+function safe(s=""){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function render(list,append=false){
+ if(!append)feed.innerHTML="";
+ if(!list.length&&!append){feed.innerHTML='<div class="empty">Nenhum vídeo encontrado. Verifique sua chave da API ou tente outra categoria.</div>';return}
+ list.forEach(v=>{
+  const card=document.createElement("section");card.className="video-card";card.dataset.id=v.id;
+  const isSaved=saved.includes(v.id);
+  card.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.id)}?playsinline=1&rel=0&modestbranding=1" title="${safe(v.title)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe><div class="video-shade"></div><div class="video-info"><div class="channel">${safe(v.channel)}</div><div class="video-title">${safe(v.title)}</div><div class="video-desc">${safe(v.description||"Assista e compartilhe esta mensagem de fé.")}</div></div><div class="actions"><button class="action save ${isSaved?"active":""}"><b>${isSaved?"♥":"♡"}</b><span>Salvar</span></button><button class="action share"><b>↗</b><span>Compartilhar</span></button><button class="action youtube"><b>▶</b><span>YouTube</span></button></div>`;
+  card.querySelector(".save").onclick=()=>toggleSave(v.id,card);
+  card.querySelector(".share").onclick=()=>{const url="https://www.youtube.com/watch?v="+v.id;if(navigator.share)navigator.share({title:v.title,url}).catch(()=>{});else{navigator.clipboard?.writeText(url);toast("Link copiado")}};
+  card.querySelector(".youtube").onclick=()=>window.open("https://www.youtube.com/watch?v="+v.id,"_blank");
+  feed.appendChild(card);
+ });
+}
+function toggleSave(id,card){if(saved.includes(id))saved=saved.filter(x=>x!==id);else saved.push(id);localStorage.setItem("feFlixSaved",JSON.stringify(saved));const b=card.querySelector(".save");b.classList.toggle("active",saved.includes(id));b.querySelector("b").textContent=saved.includes(id)?"♥":"♡";if(activeTab==="salvos")showSaved()}
+async function youtubeSearch(query,pageToken=""){
+ if(!apiKey){panels("settings");toast("Adicione sua chave da API para começar");return null}
+ const p=new URLSearchParams({part:"snippet",q:query,type:"video",maxResults:"15",safeSearch:"strict",videoEmbeddable:"true",relevanceLanguage:"pt",regionCode:"BR",key:apiKey});
+ if(pageToken)p.set("pageToken",pageToken);
+ const r=await fetch("https://www.googleapis.com/youtube/v3/search?"+p.toString());const data=await r.json();
+ if(!r.ok)throw new Error(data.error?.message||"Erro ao consultar o YouTube");
+ nextPage=data.nextPageToken||"";
+ return (data.items||[]).filter(x=>x.id?.videoId).map(x=>({id:x.id.videoId,title:x.snippet.title,channel:x.snippet.channelTitle,description:x.snippet.description}));
+}
+async function loadFeed(reset=false){
+ if(busy)return;if(reset){videos=[];nextPage="";currentCategory=Math.max(0,currentCategory);renderCategories();showLoading()}
+ if(activeTab==="salvos"){showSaved();return}
+ busy=true;
+ try{const found=await youtubeSearch(categories[currentCategory].query+(currentCategory===0?" cristão português":""));if(found){videos=found;render(videos)}}
+ catch(e){feed.innerHTML=`<div class="empty">Não foi possível carregar os vídeos.<br><br>${safe(e.message)}<br><br>Confira sua chave e a conexão com a internet.</div>`}
+ finally{busy=false}
+}
+async function doSearch(){
+ const q=$("#searchInput").value.trim();if(!q)return;$("#searchResults").innerHTML='<div class="muted">Pesquisando...</div>';
+ try{const list=await youtubeSearch(q);$("#searchResults").innerHTML="";(list||[]).forEach(v=>{const el=document.createElement("button");el.className="result";el.innerHTML=`<img src="https://i.ytimg.com/vi/${encodeURIComponent(v.id)}/mqdefault.jpg"><span><b>${safe(v.title)}</b><br><small>${safe(v.channel)}</small></span>`;el.onclick=()=>{panels("");currentCategory=0;videos=[v,...videos.filter(x=>x.id!==v.id)];render(videos)};$("#searchResults").appendChild(el)})}
+ catch(e){$("#searchResults").textContent=e.message}
+}
+function showSaved(){const list=videos.filter(v=>saved.includes(v.id));if(!saved.length){feed.innerHTML='<div class="empty">Seus vídeos salvos aparecerão aqui.</div>';return}if(list.length)render(list);else{feed.innerHTML='<div class="empty">Os vídeos salvos ficam guardados neste aparelho. Abra a busca para encontrar mais conteúdos.</div>'}}
+$("#settingsBtn").onclick=()=>{panels("settings");$("#apiKey").value=apiKey};
+$("#searchBtn").onclick=()=>panels("search");
+document.querySelectorAll(".close").forEach(b=>b.onclick=()=>panels(""));
+$("#saveKey").onclick=()=>{apiKey=$("#apiKey").value.trim();if(!apiKey){toast("Cole uma chave válida");return}localStorage.setItem("feFlixApiKey",apiKey);panels("");toast("Chave salva");loadFeed(true)};
+$("#clearKey").onclick=()=>{apiKey="";localStorage.removeItem("feFlixApiKey");$("#apiKey").value="";toast("Chave apagada")};
+$("#doSearch").onclick=doSearch;$("#searchInput").addEventListener("keydown",e=>{if(e.key==="Enter")doSearch()});
+document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");activeTab=b.dataset.tab;if(activeTab==="salvos"){bar.style.display="none";showSaved()}else{bar.style.display="flex";currentCategory=activeTab==="louvores"?3:activeTab==="pregacoes"?2:0;loadFeed(true)}});
+feed.addEventListener("scroll",()=>{if(feed.scrollTop+feed.clientHeight>=feed.scrollHeight-200&&!busy&&nextPage&&activeTab==="inicio"){loadMore()}});
+async function loadMore(){busy=true;try{const more=await youtubeSearch(categories[currentCategory].query,nextPage);if(more){videos=videos.concat(more);render(more,true)}}catch(e){}finally{busy=false}}
+renderCategories();if(apiKey)loadFeed(true);else{feed.innerHTML='<div class="empty"><div><div style="font-size:50px;margin-bottom:12px">✝</div><b>Bem-vindo ao FÉ FLIX</b><p>Seu espaço de vídeos cristãos.</p><p class="small">Para iniciar, configure sua chave gratuita da YouTube Data API nas configurações.</p><button class="primary" id="startConfig">Configurar agora</button></div></div>';$("#startConfig").onclick=()=>panels("settings")}
+</script>
+</body></html>
